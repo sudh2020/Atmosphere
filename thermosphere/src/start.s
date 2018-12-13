@@ -28,21 +28,35 @@ _metadata:
 /* Entrypoint for thermosphere. Should execute at 0x80000000. */
 /* Arguments: X0 = EL1 entrypoint, X1 = EL1 argument. */
 _entrypoint:
-    // Init DAIFSET, get EL
-    msr DAIFSET, #0xF
-    mrs x2, CURRENTEL
+    /* Init DAIFSET, get EL */
+    msr daifset, #0xF
+    mrs x2, currentel
     cmp x2, #8
     invalid_el:
     bne invalid_el
     
-    // Setup for EL1 entry
+    /* Set VBAR_EL2 */
+    ldr x2, =thermosphere_vectors
+    msr vbar_el2, x2
+    
+    /* Setup for EL1 entry */
     msr ELR_EL2, x0
     mov x0, x1
     ldr x2, =0x3C5
     msr SPSR_EL2, x2
     isb
     
-    // Jump to EL1, TODO: Actually implement thermosphere functionality
+    /* Set stack for exception entry. */
+    /* SP = STACKS + (0x200 * (core + 1)) */
+    ldr x2, =thermo_el2_stacks_end
+    mrs x3, mpidr_el1
+    and x3, x3, #0x3
+    add x3, x3, #0x1
+    lsl x3, x3, #0x9
+    add x2, x2, x3
+    mov sp, x2
+        
+    /* Jump to EL1, TODO: Actually implement thermosphere functionality */
     eret
     // Loop forever.
     1: b 1b

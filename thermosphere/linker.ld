@@ -27,20 +27,25 @@ SECTIONS
     . = ALIGN(8);
     PROVIDE(lds_bss_start = .);
     .bss (NOLOAD) : {
-        *(.bss*) . = ALIGN(8);
+        *(.bss* COMMON) . = ALIGN(8);
     }
-    PROVIDE(lds_bss_end = .);
+    PROVIDE(bss_end = .);
     
-    ASSERT(lds_bss_end <= 0x8000E000, "Thermosphere is too big!")
+    ASSERT(bss_end <= 0x8000E000, "Thermosphere is too big!")
 
     /* Exception vectors + stack */
     . = 0x8000E000;
-    PROVIDE(lthermo_evt_start = .);
+    PROVIDE(thermo_evt_start = .);
+    
+    .vectors : {
+        KEEP (*(.vectors*))
+    }
+    
     . = 0x8000E800;
-    PROVIDE(lthermo_evt_end = .);
-    PROVIDE(lthermo_el2_stacks_start = .);
+    PROVIDE(thermo_evt_end = .);
+    PROVIDE(thermo_el2_stacks_start = .);
     . = 0x8000F000;
-    PROVIDE(lthermo_el2_stacks_end = .);
+    PROVIDE(thermo_el2_stacks_end = .);
 
     lds_thermo_end = .;
 
