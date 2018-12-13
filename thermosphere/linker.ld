@@ -1,10 +1,10 @@
 OUTPUT_FORMAT("elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
-ENTRY(_start)
+ENTRY(_entrypoint)
 
 SECTIONS
 {
-    . = 0x800D0000;
+    . = 0x80000000;
 
     . = ALIGN(4);
     .text : {
@@ -30,20 +30,17 @@ SECTIONS
         *(.bss*) . = ALIGN(8);
     }
     PROVIDE(lds_bss_end = .);
+    
+    ASSERT(lds_bss_end <= 0x8000E000, "Thermosphere is too big!")
 
-    /* EL2 stack */
-    . = ALIGN(16);
-    . += 0x10000; /* 64 KiB stack */
-    el2_stack_end = .;
-
-    /* Page align the end of binary */
-    . = ALIGN(512);
-    PROVIDE(lds_el2_thermo_end = .);
-
-    /* EL1 stack */
-    . = ALIGN(16);
-    . += 0x10000; /* 64 KiB stack */
-    el1_stack_end = .;
+    /* Exception vectors + stack */
+    . = 0x8000E000;
+    PROVIDE(lthermo_evt_start = .);
+    . = 0x8000E800;
+    PROVIDE(lthermo_evt_end = .);
+    PROVIDE(lthermo_el2_stacks_start = .);
+    . = 0x8000F000;
+    PROVIDE(lthermo_el2_stacks_end = .);
 
     lds_thermo_end = .;
 
