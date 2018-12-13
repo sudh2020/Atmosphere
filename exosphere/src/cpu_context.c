@@ -82,7 +82,8 @@ void __attribute__((noreturn)) core_jump_to_lower_el(void) {
     /* already does a dsb sy */
     __sev();
     
-    if (thermosphere_is_present()) {
+    /* Go to thermosphere if EL2h, otherwise go to kernel. */
+    if (thermosphere_is_present() && (spsr & 0b1111) == 0b1001) {
         /* Thermosphere arguments are EL1 ep + argument. */
         arg1 = arg0;
         arg0 = (uint64_t)ep;
