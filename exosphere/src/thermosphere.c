@@ -31,6 +31,10 @@ void thermosphere_detect(void *section, size_t sec_size) {
         return;
     }
     
+    if (sec_size >= THERMOSPHERE_SIZE_MAX) {
+        panic_predefined(0xF);
+    }
+    
     g_tms_ep = (uintptr_t)section + header->rel_ep;    
     /* Sanity check the relative entrypoint. */
     if (g_tms_ep < (uintptr_t)section || g_tms_ep >= (uintptr_t)section + sec_size) {

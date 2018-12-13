@@ -21,6 +21,9 @@
 
 #define MAGIC_TMS0 (0x30534D54)
 
+/* Thermosphere should be located between 0x80000000 and 0x8000F000. */
+#define THERMOSPHERE_SIZE_MAX (0xF000)
+
 typedef struct {
     uint32_t magic;
     uint32_t rel_ep;
