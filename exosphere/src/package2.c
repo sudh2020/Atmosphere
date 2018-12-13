@@ -475,7 +475,7 @@ static void copy_warmboot_bin_to_dram() {
             warmboot_src = (uint8_t *)0x4003D800;
             break;
     }
-    uint8_t *warmboot_dst = (uint8_t *)0x8000D000;
+    uint8_t *warmboot_dst = (uint8_t *)WARMBOOT_DST_ADDRESS;
     const size_t warmboot_size = 0x2000;
     
     /* Flush cache, to ensure warmboot is where we need it to be. */
@@ -521,7 +521,7 @@ void load_package2(coldboot_crt0_reloc_list_t *reloc_list) {
     
     /* Perform initial PMC register writes, if relevant. */
     if (exosphere_get_target_firmware() >= EXOSPHERE_TARGET_FIRMWARE_400) {
-        MAKE_REG32(PMC_BASE + 0x054) = 0x8000D000; 
+        MAKE_REG32(PMC_BASE + 0x054) = (uint32_t)WARMBOOT_DST_ADDRESS; 
         MAKE_REG32(PMC_BASE + 0x0A0) &= 0xFFF3FFFF; 
         MAKE_REG32(PMC_BASE + 0x818) &= 0xFFFFFFFE; 
         MAKE_REG32(PMC_BASE + 0x334) |= 0x10;
