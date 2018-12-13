@@ -24,6 +24,7 @@
 #include "kip.h"
 #include "se.h"
 #include "fs_utils.h"
+#include "thermosphere.h"
 
 #define u8 uint8_t
 #define u32 uint32_t
@@ -34,7 +35,7 @@
 
 static void package2_decrypt(package2_header_t *package2);
 static size_t package2_get_src_section(void **section, package2_header_t *package2, unsigned int id);
-static size_t package2_get_thermosphere(void **thermosphere);
+static size_t package2_get_thermosphere(thermosphere_header_t **thermosphere);
 static ini1_header_t *package2_rebuild_ini1(ini1_header_t *ini1, uint32_t target_firmware);
 static void package2_append_section(unsigned int id, package2_header_t *package2, void *data, size_t size);
 static void package2_fixup_header_and_section_hashes(package2_header_t *package2, size_t size);
@@ -49,7 +50,7 @@ void package2_rebuild_and_copy(package2_header_t *package2, uint32_t target_firm
     void *kernel;
     size_t kernel_size;
     bool is_sd_kernel = false;
-    void *thermosphere;
+    thermosphere_header_t *thermosphere;
     size_t thermosphere_size;
     ini1_header_t *orig_ini1, *rebuilt_ini1;
 
@@ -114,7 +115,7 @@ void package2_rebuild_and_copy(package2_header_t *package2, uint32_t target_firm
     package2_append_section(PACKAGE2_SECTION_INI1, rebuilt_package2, rebuilt_ini1, rebuilt_ini1->size);
     if (thermosphere_size) {
         /* Set thermosphere destination. */
-        package2->metadata.section_offsets[PACKAGE2_SECTION_UNUSED] = 0x80000000;
+        rebuilt_package2->metadata.section_offsets[PACKAGE2_SECTION_UNUSED] = (thermosphere->phys_base - DRAM_BASE_PHYSICAL);
         package2_append_section(PACKAGE2_SECTION_UNUSED, rebuilt_package2, thermosphere, thermosphere_size);
     }
 
@@ -300,7 +301,7 @@ static size_t package2_get_src_section(void **section, package2_header_t *packag
     return package2->metadata.section_sizes[id];
 }
 
-static size_t package2_get_thermosphere(void **thermosphere) {
+static size_t package2_get_thermosphere(thermosphere_header_t **thermosphere) {
     extern const uint8_t thermosphere_bin[];
     extern const uint32_t thermosphere_bin_size;
     /* TODO: enable when tested. */

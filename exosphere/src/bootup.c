@@ -330,7 +330,7 @@ void setup_current_core_state(void) {
     SET_SYSREG(actlr_el2, 0x73ull);
     SET_SYSREG(hcr_el2, 0x80000000ull);
     SET_SYSREG(dacr32_el2, 0xFFFFFFFFull);
-    SET_SYSREG(sctlr_el1, 0xC50838ull);;
+    SET_SYSREG(sctlr_el1, 0xC50838ull);
 
     __isb();
 

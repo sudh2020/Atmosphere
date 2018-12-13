@@ -21,8 +21,8 @@
 /* This is the thermosphere binary header. */
 _metadata:
     .word 0x30534D54  /* Magic number */
+    .word _metadata  /* Physical base */
     .word (_entrypoint - _metadata) /* Entrypoint */
-    .word 0xCCCCCCCC  /* Padding */
     .word 0xCCCCCCCC  /* Padding */
 
 /* Entrypoint for thermosphere. Should execute at 0x80000000. */

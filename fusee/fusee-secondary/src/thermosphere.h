@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#ifndef EXOSPHERE_THERMOSPHERE_H
-#define EXOSPHERE_THERMOSPHERE_H
+#ifndef FUSEE_THERMOSPHERE_H
+#define FUSEE_THERMOSPHERE_H
 
 #include "utils.h"
 
@@ -32,9 +32,5 @@ typedef struct {
     uint32_t rel_ep;
     uint32_t reserved[1];
 } thermosphere_header_t;
-
-void thermosphere_detect(void *section, size_t sec_size);
-bool thermosphere_is_present(void);
-uintptr_t thermosphere_get_entrypoint(void);
 
 #endif

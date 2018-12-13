@@ -31,14 +31,25 @@ void thermosphere_detect(void *section, size_t sec_size) {
         return;
     }
     
-    if (sec_size >= THERMOSPHERE_SIZE_MAX) {
+    /* Check the physical base matches the section. */
+    if (header->phys_base != (uintptr_t)section) {
         panic_predefined(0xB);
     }
     
-    g_tms_ep = (uintptr_t)section + header->rel_ep;    
+    /* Check the physical base is allowed. */
+    if (!(THERMOSPHERE_ADDR_START <= header->phys_base && header->phys_base < THERMOSPHERE_ADDR_END)) {
+        panic_predefined(0xC);
+    }
+    
+    /* Check that thermosphere isn't too big. */
+    if (sec_size >= THERMOSPHERE_SIZE_MAX - (header->phys_base - THERMOSPHERE_ADDR_START)) {
+        panic_predefined(0xD);
+    }
+    
+    g_tms_ep = (uintptr_t)header->phys_base + header->rel_ep;    
     /* Sanity check the relative entrypoint. */
     if (g_tms_ep < (uintptr_t)section || g_tms_ep >= (uintptr_t)section + sec_size) {
-        panic_predefined(0xC);
+        panic_predefined(0xE);
     }
     
     /* Thermosphere present means we should deprivilege to EL2. */
