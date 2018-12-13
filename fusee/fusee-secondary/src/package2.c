@@ -62,9 +62,11 @@ void package2_rebuild_and_copy(package2_header_t *package2, uint32_t target_firm
     /* Modify Package2 to add an additional thermosphere section. */
     thermosphere_size = package2_get_thermosphere(&thermosphere);
 
-    if (thermosphere_size != 0 && package2->metadata.section_sizes[PACKAGE2_SECTION_UNUSED] != 0) {
-        fatal_error(u8"Error: Package2 has no unused section for Thermosphère!\n");
-    }
+    if (thermosphere_size != 0) {
+        if (package2->metadata.section_sizes[PACKAGE2_SECTION_UNUSED] != 0) {
+            fatal_error(u8"Error: Package2 has no unused section for Thermosphère!\n");
+        }
+    } 
     
     /* Load Kernel from SD, if possible. */
     {
@@ -110,7 +112,11 @@ void package2_rebuild_and_copy(package2_header_t *package2, uint32_t target_firm
     memcpy(rebuilt_package2, package2, sizeof(package2_header_t));
     package2_append_section(PACKAGE2_SECTION_KERNEL, rebuilt_package2, kernel, kernel_size);
     package2_append_section(PACKAGE2_SECTION_INI1, rebuilt_package2, rebuilt_ini1, rebuilt_ini1->size);
-    package2_append_section(PACKAGE2_SECTION_UNUSED, rebuilt_package2, thermosphere, thermosphere_size);
+    if (thermosphere_size) {
+        /* Set thermosphere destination. */
+        package2->metadata.section_offsets[PACKAGE2_SECTION_UNUSED] = 0x80000000;
+        package2_append_section(PACKAGE2_SECTION_UNUSED, rebuilt_package2, thermosphere, thermosphere_size);
+    }
 
     /* Fix all necessary data in the header to accomodate for the new patches. */
     package2_fixup_header_and_section_hashes(rebuilt_package2, rebuilt_package2_size);
@@ -119,6 +125,9 @@ void package2_rebuild_and_copy(package2_header_t *package2, uint32_t target_firm
     memcpy(NX_BOOTLOADER_PACKAGE2_LOAD_ADDRESS, rebuilt_package2, rebuilt_package2_size);
 
     /* We're done. */
+    if (thermosphere_size) {
+        free(thermosphere);
+    }
     free(rebuilt_ini1);
     free(rebuilt_package2);
 }
@@ -292,11 +301,12 @@ static size_t package2_get_src_section(void **section, package2_header_t *packag
 }
 
 static size_t package2_get_thermosphere(void **thermosphere) {
-    /*extern const uint8_t thermosphere_bin[];
-    extern const uint32_t thermosphere_bin_size;*/
+    extern const uint8_t thermosphere_bin[];
+    extern const uint32_t thermosphere_bin_size;
     /* TODO: enable when tested. */
-    (*thermosphere) = NULL;
-    return 0;
+    (*thermosphere) = malloc(thermosphere_bin_size);
+    memcpy(*thermosphere, thermosphere_bin, thermosphere_bin_size);
+    return thermosphere_bin_size;
 }
 
 static ini1_header_t *package2_rebuild_ini1(ini1_header_t *ini1, uint32_t target_firmware) {
